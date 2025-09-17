@@ -13,7 +13,7 @@ a cassette player for the C64. And yes I do know there are other more elaborate
 versions.
 
 Loads .TAP and .PRG files in both normal mode as fastload mode.
-      --> In fastload you's have to load a fastloader first.
+      --> In fastload you'd have to load a fastloader first.
           Just like the real world :-)
 
 And there's an extra Auto_turbo mode. Autoturbo only works with .PRG files.
