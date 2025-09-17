@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!-- 
+  Arjen Vellekoop
+  Index.html for C64 YADE
+  July 2025
+-->
+<html>
+	<head>
+  		<title>C64 YADE July 2025</title>
+  		<meta name="viewport" content="width=device-width, initial-scale=1">
+  		<meta charset="utf-8"/> <!-- shuts up warning -->
+  		<link rel="icon" href="data:,">
+  		<link rel="stylesheet" type="text/css" href="css/admin.css" />
+	</head>    
+	<body>
+		<table>
+			<tr>
+				<td><h2>C64 YADE</h2></td><td></td><td><a href= "/settings"><button class="cssbutton">Settings</button></a></td>
+			</tr>
+			<tr>
+				<td colspan="3"><p id="Notification" name="Notification" value="Notification">Note</p></td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<form action="/playbutton"  method="get">
+  						<label for="C64filename">File:</label>
+	  					<input type="text" id="C64filename" name="C64filename" value="C64filename">
+	  					<button type="button" id="Folder_icon" onclick="window.location.href='/files';"></button><br><br>
+
+						<input type="radio" id="NormalSpeed" name="Uploadformat" value="0">
+  						<label for="NormalSpeed" id="labelNormalSpeed">Normal speed</label><br>
+						<input type="radio" id="TurboSpeed" name="Uploadformat" value="1">
+  						<label for="NormalSpeed" id="labelTurboSpeed">Turbo speed</label><br>
+  						<input type="radio" id="AutoTurbo" name="Uploadformat" value="2">
+  						<label for="AutoTurbo" id="labelAutoTurbo">Auto Fastload</label><br><br>
+  						<input type="submit" name="play" value="Save" disabled>
+  						<input type="submit" name="play" value="PLAY">
+  						<input type="submit" name="play" value="PANIC">
+					</form>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				</td></tr>
+		</table>
+	</body>
+	<script>
+
+	const getdata = async() => {
+  		try {
+    		const response = await fetch('/get_indexdata');
+			// Check for 2xx status codes.
+    		if (!response.ok) {
+      		throw new Error('Error fetching data');
+    		}
+
+    		// Parse the JSON response.
+    		const json_Indexdata = await response.json();
+        			for (const Edata of json_Indexdata) {
+						if (Edata.name == "C64filename") {
+							var ext = Edata.value.substr(Edata.value.lastIndexOf('.') + 1).toUpperCase();
+						}
+
+        				if (Edata.name == "Uploadformat") {
+							if (ext == "TAP") {
+								document.getElementById("labelNormalSpeed").style.color = "grey";
+								document.getElementById("NormalSpeed").disabled = true;
+								document.getElementById("labelTurboSpeed").style.color = "grey";
+								document.getElementById("TurboSpeed").disabled = true;
+								document.getElementById("labelAutoTurbo").style.color = "grey";
+								document.getElementById("AutoTurbo").disabled = true;
+							}
+							else {
+        						switch(Edata.value) {
+        							case 0:
+        								document.getElementById("NormalSpeed").checked = true;
+//										document.getElementById("labelNormalSpeed").style.color = "red";
+	        							break;
+    	    						case 1:
+        								document.getElementById("TurboSpeed").checked = true;
+//										document.getElementById("labelTurboSpeed").style.color = "red";
+        								break;
+        							case 2:
+        								document.getElementById("AutoTurbo").checked = true;
+//										document.getElementById("labelAutoTurbo").style.color = "red";
+        								break;
+        							default:
+        								console.log("Error in Uploadformat");
+        						}
+							}
+        				}
+
+						const element = document.getElementById(Edata.name);
+        				if (!element) continue;
+        				element.value = Edata.value;
+						element.innerHTML = Edata.value;						
+        			}
+
+    		// Fetch the data again after 21 seconds.
+    		//setTimeout(getdata, 21000);
+  		} 
+  		catch (error) {
+    		// TODO: Handle errors instead of logging them.
+  			console.error(error);
+  		}
+	};
+	getdata();
+	
+	</script>
+</html>

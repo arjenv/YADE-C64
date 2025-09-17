@@ -1,0 +1,101 @@
+.DownloadRenameButton{
+	width: 110px;
+	height: 25px;
+	padding: 0px 10px;
+	text-align: left;
+	font-size: 100%;
+	font-weight: bold;
+}
+h2 {
+	color: #D6000F;
+	text-align: left;
+	font-weight: bold;
+	font-size: 175%
+}
+#Home_icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-home-40.png");
+  margin:10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+#Create_dir_icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-add-folder-48.png");
+  margin:10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+#Upload_icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-upload2-40.png");
+  margin:10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+#Tar_icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-tar2-40.png");
+  margin:10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+#TARDownload_icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-click-40.png");
+  margin:10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+#Folder_icon {
+  width: 25px;
+  height: 25px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-folder-40.png");
+  margin-right: 10px;
+  background-size: cover;
+  vertical-align: top;
+  cursor: pointer; /* Cursor on hover */
+}
+#Download_icon {
+  width: 25px;
+  height: 25px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-download2-25.png");
+  margin-right: 10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+#Delete_icon {
+  width: 25px;
+  height: 25px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-delete-25.png");
+  margin-right: 10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+#Rename_icon {
+  width: 25px;
+  height: 25px;
+  border-radius: 5px;
+  background-image: url("/images/icons8-crayon-30.png");
+  margin-right: 10px;
+  margin-right: 10px;
+  background-size: cover;
+  cursor: pointer; /* Cursor on hover */
+}
+tr {
+	text-align: left;
+	height: 25px;
+}

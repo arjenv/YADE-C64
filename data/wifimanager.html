@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!-- 
+  Arjen Vellekoop
+  Filemanager.html for C64 YADE
+  September 2025
+-->
+<html>
+<head>
+  <title>YADE WiFi Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+	<table>
+		<tr><h1>YADE WiFi Manager</h1></tr>
+      <form action="/network" method="GET">
+    	<tr>
+        <td><label for="ssid">SSID</label></td>
+        <td><input type="text" id ="ssid" name="ssid"></td>
+		</tr>
+        	<td><label for="pass">Password</label></td>
+			<td><input type="text" id ="pass" name="pass"></td>
+      </tr>
+      <tr>
+     		<td><label for="ip">IP Address</label></td>
+     		<td><input type="text" id ="ip" name="ip" value="192.168.1.200"></td>
+      </tr>
+      <tr>
+       	<td><label for="gateway">Gateway Address</label></td>
+         <td><input type="text" id ="gateway" name="gateway" value="192.168.1.1"></td>
+      </tr>      <tr>
+       	<td><label for="subnet">Subnet Address</label></td>
+         <td><input type="text" id ="subnet" name="subnet" value="255.255.255.0"></td>
+      </tr>
+      <tr>
+      	<td><input type ="submit" value ="Save"></td>
+      </tr>
+      </form>
+	</table>
+</body>
+</html>

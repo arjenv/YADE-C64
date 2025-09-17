@@ -1,0 +1,316 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <title>Administration page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="author" content="arjen" lang="English">
+	<meta name="copyright" content="AVTUBE" lang="English">
+	<meta name="date" content="2025-07-15T12:58:15+0200" lang="English">
+	<meta name="description" content="Files administration page" lang="English">
+  <meta charset="UTF-8">
+	<link rel="stylesheet" type="text/css" href="css/admin.css" />
+</head>
+<body onload = listFilesButton("/prg/")>
+  <h2>Administration</h2>
+  <p>Firmware: %FIRMWARE%</p>
+  <p>
+		<table>
+  			<tr><td>Total Storage:</td><td><span id="totalLittleFs">0</span></td></tr>
+  			<tr><td>Used  Storage:</td><td><span id="usedLittleFs">0</span></td></tr>
+  			<tr><td>Free  Storage:</td><td><span id="freeLittleFs">0</span></td></tr>
+  		</table>
+  </p>
+  <p>
+		<table>
+  			<tr>
+  				<td><button id="Home_icon" onclick="window.location.href='/';" title="Home"></button></td>
+	  			<td><button id="Create_dir_icon" onclick="makeDirButton()" title="New Dir"></button></td>
+  				<td><button id="Upload_icon" onclick="showUploadButtonFancy()" title="Upload"></button></td>
+  				<td><button id="Tar_icon" onclick="makeTAR()" title="Create TAR"></button></td>
+  				<td><div id="ReadyTAR"></div></td>
+	  		</tr>
+  		</table>
+  	</p>
+  <p id="status"></p>
+  <p id="detailsheader"></p>
+  <p id="details"></p>
+  
+<script>
+const mydate = new Date();
+var currentDirectory = '/prg/';
+var	showalert = true; // change to 'true' if you want the warning
+
+function makeDirButton() { // make new directory 
+  document.getElementById("detailsheader").innerHTML = "<h3>Create new Directory<h3>"
+  document.getElementById("status").innerHTML = "";
+  var uploadform = "<input type=\"text\" placeholder=\"Enter directory\" id=\"newdir_id\">" +
+  					"<br><br>" +
+					"<button type=\"button\" onclick=\"handle_newdir();\">Create</button>" +
+					"<button type=\"button\" onclick=\"listFilesButton(currentDirectory);\">Cancel</button>";
+	document.getElementById("details").innerHTML = uploadform;
+}
+
+function handle_newdir() {
+	var newdirName=document.getElementById("newdir_id").value;
+	if (newdirName=="") {listFilesButton(currentDirectory);}	// same as cancel
+	if (newdirName.startsWith("/")) {newdirName = newdirName.slice(1);} // no '/' at start
+	if (newdirName.endsWith("/")) {newdirName = newdirName.slice(0,-1);} // no '/' at end
+	console.log(currentDirectory+newdirName);
+  	xmlhttp=new XMLHttpRequest();
+  	xmlhttp.open("GET", "/makedirectory?newdir="+currentDirectory+newdirName + "&date="+mydate.getTime(), true);
+  	xmlhttp.send();
+  	document.getElementById("status").innerHTML = "Creating directory";
+  	xmlhttp.onreadystatechange = function() {
+  		if (this.readyState == 4) {
+			document.getElementById("status").innerHTML = xmlhttp.responseText;
+			if (xmlhttp.status == 200) { //on success goto this directory
+				currentDirectory = currentDirectory + newdirName + "/";
+				listFilesButton(currentDirectory);			
+			}
+		}				
+	}
+}
+
+
+
+function listFilesButton(lsdir) {
+	var	dirlist = "<table><tr><th align='left'>Name</th><th align='left'>Size</th><th align='left'>Date</th><th></th><th></th></tr>";
+	if (lsdir == "/") {
+		var enterroot = true;
+		if (showalert == true) { // show it only once
+			enterroot = confirm("You\'re entering root directory. Do not change files in root!");
+			if (enterroot) showalert = false;
+		}
+	}
+	if (enterroot || lsdir != "/") { 
+  		xmlhttp=new XMLHttpRequest();
+  		xmlhttp.open("GET", "/listfiles?listdir="+lsdir, true);
+  		xmlhttp.send();
+  		document.getElementById("status").innerHTML = "reading files";
+  		xmlhttp.onreadystatechange = function() {
+  			if (this.readyState == 4 && this.status == 200) {
+  				document.getElementById("detailsheader").innerHTML = "<h3>Files " + lsdir + "<h3>";
+				const jsondirlist = JSON.parse(xmlhttp.responseText);
+		
+				jsondirlist.sort((a, b) => {
+					const nameA = a.name.toUpperCase(); // ignore upper and lowercase
+					const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+	  				if (a.type == "full" && b.type != "full") {  // up goes 1st
+  						return -1;
+	  				}
+  					if (b.type == "full" && a.type != "full") { 
+  						return +1;
+	  				}
+		  			if (a.type < b.type) {	// then directories dir < file
+  						return -1
+  					}
+  					if (a.type > b.type) {
+  						return +1;
+		  			}
+  					if (nameA < nameB) {
+    					return -1;
+  					}
+	  				if (nameA > nameB) {
+   	 				return 1;
+  					}
+	  				return 0;  // names must be equal
+				});
+		
+				for (const x in jsondirlist) {
+					if (jsondirlist[x].type == "full") {  // show '../' --> dir UP
+						if (jsondirlist[x].name != "/") {
+							var upperdir = jsondirlist[x].name.slice(0,-1); // trick to never have a '/' at the end
+							var upperdir = upperdir.substring(0, upperdir.lastIndexOf('/')+1);
+							dirlist+= "<tr><td style=\"color:green; cursor:pointer;\" onclick=\"listFilesButton(\'" + upperdir + "\')\" title=\"Up\">../</td><td></td><td></td>";
+							dirlist+= "<td></td></tr>";
+						}
+					}
+					else { // for Directories show the dir name
+						if (jsondirlist[x].type == "dir") {
+							dirlist+= "<tr><td style=\"color:green; cursor:pointer;\" onclick=\"listFilesButton(\'" + lsdir +  jsondirlist[x].name + "/\')\" title= \"Enter\">" + jsondirlist[x].name + "</td><td></td><td></td>";
+							dirlist+= "<td></td></tr>";
+						}
+						else { // must be a file
+							var extension = jsondirlist[x].name.substring(jsondirlist[x].name.length-4).toUpperCase(); // get extension of the filename
+							if ((extension === ".PRG") || (extension === ".TAP")) {
+	      	 				dirlist+= "<tr><td style=\"color:blue; cursor:pointer;\" onclick=\"selectFile(\'" + lsdir + jsondirlist[x].name + "/\')\" title= \"Select\">" + jsondirlist[x].name + "</td><td>" + jsondirlist[x].size + "</td><td>" +jsondirlist[x].lastmod + "</td>";
+							}
+							else {
+		      	 			dirlist+= "<tr><td style=\"color:blue;\">" + jsondirlist[x].name + "</td><td>" + jsondirlist[x].size + "</td><td>" +jsondirlist[x].lastmod + "</td>";
+		      	 		}
+							dirlist += "<td><button class=\"DownloadRenameButton\" onclick=\"downloadDeleteButton(\'" + jsondirlist[x].name + "\', \'rename\')\" id=\"Rename_icon\" title=\"Rename\"></button></td>";
+							dirlist += "<td><button class=\"DownloadRenameButton\" onclick=\"downloadDeleteButton(\'" + lsdir + jsondirlist[x].name + "\', \'download\')\" id=\"Download_icon\" title=\"Download\"></button></td>";
+	       				dirlist += "<td><button class=\"DownloadRenameButton\" onclick=\"downloadDeleteButton(\'" + lsdir + jsondirlist[x].name + "\', \'delete\')\" id=\"Delete_icon\" title=\"Delete\"></button></td></tr>";
+   	    			}
+					}
+				}
+	  			document.getElementById("details").innerHTML = dirlist;
+				document.getElementById("status").innerHTML = "done";
+				currentDirectory = lsdir;
+				update_memory();
+	  		}
+  		};
+	}
+}
+
+function downloadDeleteButton(filename, action) {
+	var urltocall = "/file?name=" + filename + "&action=" + action + "&rename=\"\"";
+	if (action == "delete") {	
+		if (confirm("Delete " + filename +"?")) {
+			xmlhttp=new XMLHttpRequest();
+			xmlhttp.open("GET", urltocall, true);
+  			xmlhttp.send();
+  			document.getElementById("status").innerHTML = "Deleting file please wait...";
+			xmlhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					document.getElementById("status").innerHTML = xmlhttp.responseText;
+					currentDirectory = filename.substring(0, filename.lastIndexOf('/')+1);
+					listFilesButton(currentDirectory);
+				}
+  			};
+ 	 	}
+ 	 	else {
+			document.getElementById("status").innerHTML = "Delete cancelled"; 	 	
+ 	 	}
+  	}
+  
+	if (action == "download") {
+   	document.getElementById("status").innerHTML = "";
+    	window.open(urltocall,"_blank");
+	}
+  	if (action == "rename") {
+  		var filerename = prompt("Rename " + filename + ":", filename);
+  		if (filerename == null || filerename == "" || filerename == filename) { //cancel
+  			document.getElementById("status").innerHTML = "Rename cancelled";
+  		}
+  		else {
+			urltocall = "/file?name=" + currentDirectory + filename + "&action=" + action + "&rename=" + currentDirectory + filerename;
+			xmlhttp=new XMLHttpRequest();
+			xmlhttp.open("GET", urltocall, true);
+   	 	xmlhttp.send();
+    		document.getElementById("status").innerHTML = "Renaming file please wait...";
+			xmlhttp.onreadystatechange = function() {
+  				if (this.readyState == 4 && this.status == 200) {
+					document.getElementById("status").innerHTML = xmlhttp.responseText;
+					listFilesButton(currentDirectory);
+				}
+  			};
+  		}
+	}
+}
+
+function selectFile(filename) { //Send this filename to server
+	if (filename.endsWith("/")) {filename = filename.slice(0,-1);} // no '/' at end
+	var urltocall = "/selectfile?name=" + filename;
+	xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("GET", urltocall, true);
+   xmlhttp.send();
+   document.getElementById("status").innerHTML = "Select: " + filename;
+	xmlhttp.onreadystatechange = function() {
+  		if (this.readyState == 4 && this.status == 200) {
+			document.getElementById("status").innerHTML = xmlhttp.responseText;
+			window.open("/", "_self");
+		}
+  	};
+}
+
+function update_memory() {
+	ud_xmlhttp=new XMLHttpRequest();
+	ud_xmlhttp.open("GET", "/memory", true);
+  	ud_xmlhttp.send();
+
+	ud_xmlhttp.onreadystatechange = function() {
+		if (ud_xmlhttp.readyState == 4 && ud_xmlhttp.status == 200) {
+			const json_memory = JSON.parse(ud_xmlhttp.responseText);
+			document.getElementById("freeLittleFs").innerHTML = ReadableSize(json_memory.littlefs_total-json_memory.littlefs_used);
+			document.getElementById("usedLittleFs").innerHTML = ReadableSize(json_memory.littlefs_used);
+			document.getElementById("totalLittleFs").innerHTML = ReadableSize(json_memory.littlefs_total);
+		}
+	}
+}
+
+function ReadableSize(bytes) {
+  if (bytes < 1024) return (bytes + " b");
+  else if (bytes < (1024 * 1024)) return ((bytes/1024.0).toFixed(0) + " Kb"); // esp8266 always uses 4kB per block. No decimal point required.
+  else if (bytes < (1024 * 1024 * 1024)) return ((bytes/1024.0/1024.0).toFixed(2) + " Mb");
+  else return ((bytes/1024.0/1024.0/1024.0).toFixed(2) + " Gb");
+}
+
+
+function showUploadButtonFancy() {
+  document.getElementById("detailsheader").innerHTML = "<h3>Upload File<h3>"
+  document.getElementById("status").innerHTML = "";
+//  var uploadform = "<form method = \"POST\" action = \"/\" enctype=\"multipart/form-data\"><input type=\"file\" name=\"data\"/><input type=\"submit\" name=\"upload\" value=\"Upload\" title = \"Upload File\"></form>"
+//  document.getElementById("details").innerHTML = uploadform;
+  var uploadform =
+  "<form id=\"upload_form\" enctype=\"multipart/form-data\" method=\"post\">" +
+  "<input type=\"file\" name=\"file1\" id=\"file1\" onchange=\"uploadFile()\"><br>" +
+  "<progress id=\"progressBar\" value=\"0\" max=\"100\" style=\"width:300px;\"></progress>" +
+  "<h3 id=\"status\"></h3>" +
+  "<p id=\"loaded_n_total\"></p>" +
+  "</form>";
+  document.getElementById("details").innerHTML = uploadform;
+}
+function _(el) {
+  return document.getElementById(el);
+}
+function uploadFile() {
+  var file = _("file1").files[0];
+  var formdata = new FormData();
+  formdata.append("file1", file);
+//  alert(file.name+" | "+file.size+" | "+file.type);
+  var ajax = new XMLHttpRequest();
+  ajax.upload.addEventListener("progress", progressHandler, false);
+  ajax.addEventListener("load", completeHandler, false); // doesnt appear to ever get called even upon success
+  ajax.addEventListener("error", errorHandler, false);
+  ajax.addEventListener("abort", abortHandler, false);
+//  ajax.open("POST", "/", true);
+  ajax.open("POST", currentDirectory, true);
+//  ajax.open("POST", directory);
+  ajax.send(formdata);
+}
+function progressHandler(event) {
+  //_("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes of " + event.total; // event.total doesnt show accurate total file size
+  _("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes";
+  var percent = (event.loaded / event.total) * 100;
+  _("progressBar").value = Math.round(percent);
+  _("status").innerHTML = Math.round(percent) + "% uploaded... please wait";
+  if (percent >= 100) {
+    _("status").innerHTML = "Please wait, writing file to filesystem";
+  }
+}
+function completeHandler(event) {
+  _("status").innerHTML = "Upload Complete";
+  _("progressBar").value = 0;
+			listFilesButton(currentDirectory);
+
+//  xmlhttp=new XMLHttpRequest();
+//  xmlhttp.open("GET", "/listfiles", false);
+//  xmlhttp.send();
+  document.getElementById("status").innerHTML = "File Uploaded";
+//  document.getElementById("detailsheader").innerHTML = "<h3>Files<h3>";
+//  document.getElementById("details").innerHTML = xmlhttp.responseText;
+}
+function errorHandler(event) {
+  _("status").innerHTML = "Upload Failed";
+}
+function abortHandler(event) {
+  _("status").innerHTML = "inUpload Aborted";
+}
+function makeTAR() {
+	document.getElementById("status").innerHTML = "Creating TAR";
+
+	mtar_xmlhttp=new XMLHttpRequest();
+	mtar_xmlhttp.open("GET", "/maketar?tardir=" + currentDirectory, true);
+  	mtar_xmlhttp.send();
+
+	mtar_xmlhttp.onreadystatechange = function() {
+		if (mtar_xmlhttp.readyState == 4 && mtar_xmlhttp.status == 200) {
+			document.getElementById("status").innerHTML = "Downloading " + mtar_xmlhttp.responseText;
+			downloadDeleteButton(mtar_xmlhttp.responseText, 'download');
+		}
+	}
+}
+</script>
+</body>
+</html>

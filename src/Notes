@@ -1,0 +1,90 @@
+Sorry, I was out for a walk.
+
+There are serveral ways how to do it. I think the best way is having a teePrint instance declard extern in the header file. Then in one .cpp file define the teePrint instance.
+
+Here comes the changed files:
+
+TeePrint.h
+
+    correction: #include <Print.h>
+    addition: extern TeePrint teePrint;
+
+#ifndef _TEE_PRINT_
+#define _TEE_PRINT_
+
+#include <Print.h>
+
+class TeePrint : public Print {
+  private:
+    Print &out1;
+    Print &out2;
+  public:
+    TeePrint(Print &_out1, Print &_out2);
+    virtual size_t write(uint8_t b);
+};
+
+extern TeePrint tee;
+
+#endif
+
+TeePrint.cpp stays at it is - no changes
+
+#include "TeePrint.h"
+
+TeePrint::TeePrint(Print &_out1, Print &_out2) 
+  : out1(_out1)
+  , out2(_out2) {
+}
+
+size_t TeePrint::write(uint8_t b) {
+  out1.write(b);
+  out2.write(b);
+  return 1;
+}
+
+
+In one of your .cpp (probably your main.cpp):
+
+#include <TeePrint.h>
+
+TeePrint tee(Serial, TelnetStream);
+
+(all before setup())
+
+All other .cpp files which should use tee simply #include "TeePrint.h"
+
+
+
+***********************************
+About declaring structures:
+
+
+
+In a new header file, say config.h, declare your struct without conf.
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+struct config_t {
+...
+};
+
+#endif    // CONFIG_H
+
+Then in main.cpp:
+
+#include "config.h"
+...
+struct config_t conf;
+
+In loadcell.h or any other file that needs to access conf:
+
+#include "config.h"
+
+extern struct config_t conf;
+
+HTH
+
+Cheers,
+Norm.
+

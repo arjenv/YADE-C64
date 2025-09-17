@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!-- 
+  Arjen Vellekoop
+  Show Settings and form
+  August 2025
+  
+  See also https://randomnerdtutorials.com/esp32-esp8266-input-data-html-form/
+  
+  
+-->
+<html>
+	<head>
+  		<title>Settings Septmber 14 2025</title>
+  		<meta name="viewport" content="width=device-width, initial-scale=1">
+  		<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<!--  		<meta charset="utf-8"/> <!-- shuts up warning -->
+  		<link rel="icon" href="data:,">
+  		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>    
+	<body>
+		<table width="500px">
+			<tr>
+				<td colspan="3" class="Eheader">YADE Settings</td>
+			</tr>
+			<tr>
+				<td colspan="3" class="explain">
+				<p style="color:green"><b>Variables to speed up auto turbo:</b></p>
+				<b>CBMsyncLeader:</b> Tape start synchronisation time.<br>
+				<div style="text-indent: 30px;">Default 27136. try: 800-1000</div>
+				<div style="text-indent: 30px;">Saves about 10 secs...</div>
+				<b>TurbosyncLeader:</b> Fastload sync time,<br>
+				<div style="text-indent: 30px;">default 1271. Save bet: 10</div>
+				<b>TurboThreshold:</b> Fastload Threshold. Smaller is faster.<br>
+				<div style="text-indent: 30px;">Default 254 (0XFE). Save bet 120</div>
+				<div style="text-indent: 30px;">make it a multiple of 8</div>
+				<b>TurboPilotebyte.</b> Another sync in fastload mode.<br>
+				<div style="text-indent: 30px;">default 503, Save bet: 10</div>
+				<br>
+				</td>
+			</tr>
+			<tr>
+				<td><form action="/get" target="hidden-form">CBMsyncLeader</td>
+				<td><div data-tip="default: 27136">
+					<input type="number" id="CBMsyncLeader" name="CBMsyncLeader" value="CBMsyncLeader">
+				</div></td>
+				<td><input type="submit" value="Save" onclick="submitMessage('CBMsyncLeader')"></form>
+								<iframe style="display:none" name="hidden-form"></iframe></td>
+			</tr>
+			<tr>
+				<td><form action="/get" target="hidden-form">TurbosyncLeader</td>
+				<td><div data-tip="default: 1271">
+					<input type="number" id="TurbosyncLeader" name="TurbosyncLeader" value="TurbosyncLeader">
+				</div></td>
+				<td><input type="submit" value="Save" onclick="submitMessage('TurbosyncLeader')"></form>
+								<iframe style="display:none" name="hidden-form"></iframe></td>
+			</tr>
+			<tr>
+				<td><form action="/get" target="hidden-form">TurboThreshold</td>
+				<td><div data-tip="default: 254">
+					<input type="number" id="TurboThreshold" name="TurboThreshold" value="TurboThreshold">
+				</div></td>
+				<td><input type="submit" value="Save" onclick="submitMessage('TurboThreshold')"></form>
+								<iframe style="display:none" name="hidden-form"></iframe></td>
+			</tr>
+			<tr>
+				<td><form action="/get" target="hidden-form">TurboPilotebyte</td>
+				<td><div data-tip="default: 503">
+					<input type="number" id="TurboPilotebyte" name="TurboPilotebyte" value="TurboPilotebyte">
+				</div></td>
+				<td><input type="submit" value="Save" onclick="submitMessage('TurboPilotebyte')"></form>
+								<iframe style="display:none" name="hidden-form"></iframe></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td><button id="Home_icon" onclick="window.location.href='/';" title="Home"></button></td>
+			</tr>			
+		</table>
+	</body>
+	<script>
+    function submitMessage(identifier) {
+    	var vl = document.getElementById(identifier).value;
+      alert("Saved " + vl + " to ESP LittleFS");
+      setTimeout(function(){ document.location.replace("/"); }, 5000);   
+    }
+
+	const getdata = async() => {
+  		try {
+    		const response = await fetch('/get_settings');
+			// Check for 2xx status codes.
+    		if (!response.ok) {
+      		throw new Error('Error fetching data');
+    		}
+
+    		// Parse the JSON response.
+    		const json_Indexdata = await response.json();
+				for (const [name,value] of Object.entries(json_Indexdata)) {
+					console.log(name + '=' + value);
+					const element = document.getElementById(name);
+     				if (!element) continue;
+  					element.value = value;
+				}
+//        			for (const Edata of json_Indexdata) {
+//        			console.log(Edata.);
+//        				const element = document.getElementById(Edata.name);
+//        				if (!element) continue;
+//     					element.value = Edata.value;
+//     					console.log(Edata.name);
+//     					console.log(Edata.value);
+//        			}
+
+    		// Fetch the data again after 21 seconds.
+//    		setTimeout(getdata, 21000);
+  		} 
+  		catch (error) {
+    		// TODO: Handle errors instead of logging them.
+  			console.error(error);
+  		}
+	};
+	getdata();
+	
+	</script>
+</html>
