@@ -39,7 +39,7 @@ PC).
 Use at your own risk. If you did connect both and it works pls notify me.
 
 
-
+I am not a software guy, just enthousiastic..
 
 
 Schematic: The LED is 'luxury' so I could track the motor voltage during
