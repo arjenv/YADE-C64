@@ -38,6 +38,9 @@ PC).
 
 Use at your own risk. If you did connect both and it works pls notify me.
 
+platformio.ini:
+      upload_port = 192.168.1.11
+      replace with your IP address
 
 I am not a software guy, just enthousiastic..
 
