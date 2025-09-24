@@ -3,6 +3,7 @@ September 2025
 YADE
 
 Emulates a cassette player for C64.
+Based on NodeMCU ESP8266. Suffices for the job.
 Requires very little components.
 Login through a website interface on you phone/PC/Tablet.
 Simple upload C64 software via this IF.
@@ -40,7 +41,7 @@ Use at your own risk. If you did connect both and it works pls notify me.
 
 platformio.ini:
       upload_port = 192.168.1.11
-      replace with your IP address
+      --> replace with YOUR IP address
 
 I am not a software guy, just enthousiastic..
 
