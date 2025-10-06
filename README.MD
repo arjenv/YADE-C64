@@ -75,6 +75,6 @@ green uses some 2V when lit. Of course the 1k+250 Ohm can be replaced with a
 The LVL block is a bidirectional voltage converter from 5 to 3V3. Readily
 available in the electronics shop.
 
-The 'Save' option is not yet implemented.
+The 'Save' option is not yet implemented. (UPDATE: Save functionality now implemented)
 
 YADE is an acronym. Can you guess where it stands for? Let me know!
