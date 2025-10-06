@@ -71,15 +71,15 @@ void TAP2CBMtape(File C64PRG, uint8_t TapeState, bool panicbutton) {
 
       if (current_motorstate - former_motorstate == 1) { // motor is toggled on again
         TapeState++; // From STATE_HEADER to STATE_PROGRAM part. This happens more then once? Then FAULT
-        Serial.printf("\nMotor switched on\n");
-        Serial.printf("Starting timer again\n");
-        Serial.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
-        Serial.printf("cb.count: %i\n", cb.count);
-        Serial.printf("nrofbytes: %i\n", nrofbytes);
-        Serial.printf("TapeState: %i\n", TapeState);
-        Serial.printf("cbcountdeep: %i\n", cbcountdeep);
-        Serial.printf("current_motorstate: %i\n", current_motorstate);
-        Serial.printf("former_motorstate: %i\n", former_motorstate);
+        tee.printf("\nMotor switched on\n");
+        tee.printf("Starting timer again\n");
+        tee.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
+        tee.printf("cb.count: %i\n", cb.count);
+        tee.printf("nrofbytes: %i\n", nrofbytes);
+        tee.printf("TapeState: %i\n", TapeState);
+        tee.printf("cbcountdeep: %i\n", cbcountdeep);
+        tee.printf("current_motorstate: %i\n", current_motorstate);
+        tee.printf("former_motorstate: %i\n", former_motorstate);
         timer1_write(5000); //restart timer interrupt
       }
       if (current_motorstate - former_motorstate == -1) { // motor is toggled off 
@@ -88,50 +88,50 @@ void TAP2CBMtape(File C64PRG, uint8_t TapeState, bool panicbutton) {
                                                     // Or there were some extra bytes
                                                     // but the program already loaded so C64
                                                     // has switched off motor before all bytes were sent
-        Serial.printf("\nMotor switched off\n");
-        Serial.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
-        Serial.printf("cb.count: %i\n", cb.count);
-        Serial.printf("nrofbytes: %i\n", nrofbytes);
-        Serial.printf("TapeState: %i\n", TapeState);
-        Serial.printf("cbcountdeep: %i\n", cbcountdeep);
-        Serial.printf("current_motorstate: %i\n", current_motorstate);
-        Serial.printf("former_motorstate: %i\n", former_motorstate);
+        tee.printf("\nMotor switched off\n");
+        tee.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
+        tee.printf("cb.count: %i\n", cb.count);
+        tee.printf("nrofbytes: %i\n", nrofbytes);
+        tee.printf("TapeState: %i\n", TapeState);
+        tee.printf("cbcountdeep: %i\n", cbcountdeep);
+        tee.printf("current_motorstate: %i\n", current_motorstate);
+        tee.printf("former_motorstate: %i\n", former_motorstate);
         if (TapeState != STATE_HEADER) {
-          Serial.printf("Motor shut off prematurely\n");
+          tee.printf("Motor shut off prematurely\n");
           TapeState = STATE_FAULT;
         }
       }
 
       if (!cb.count) { // check ringbuffer. If 0 items then FAULT or finished
         TapeState = STATE_FAULT;
-        Serial.printf("Timer has stopped prematurely\n\n");
-        Serial.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
-        Serial.printf("cb.count: %i\n", cb.count);
-        Serial.printf("nrofbytes: %i\n", nrofbytes);
-        Serial.printf("TapeState: %i\n", TapeState);
-        Serial.printf("cbcountdeep: %i\n", cbcountdeep);
-        Serial.printf("current_motorstate: %i\n", current_motorstate);
-        Serial.printf("former_motorstate: %i\n", former_motorstate);
+        tee.printf("Timer has stopped prematurely\n\n");
+        tee.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
+        tee.printf("cb.count: %i\n", cb.count);
+        tee.printf("nrofbytes: %i\n", nrofbytes);
+        tee.printf("TapeState: %i\n", TapeState);
+        tee.printf("cbcountdeep: %i\n", cbcountdeep);
+        tee.printf("current_motorstate: %i\n", current_motorstate);
+        tee.printf("former_motorstate: %i\n", former_motorstate);
 
       }
       if (panicbutton) { // added a panic button to get out of the while loop when it hangs
         TapeState = STATE_FAULT;
-        Serial.printf("Pressed PANIC button\n\n");
+        tee.printf("Pressed PANIC button\n\n");
       }
       if (TapeState >= STATE_FAULT) {
-        Serial.printf("FAULT State Flushing.... %i\n", TapeState); // TapeState should never be over STATE_FAULT = 4
-        Serial.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
-        Serial.printf("cb.count: %i\n", cb.count);
-        Serial.printf("nrofbytes: %i\n", nrofbytes);
-        Serial.printf("cbcountdeep: %i\n", cbcountdeep);
-        Serial.printf("current_motorstate: %i\n", current_motorstate);
-        Serial.printf("former_motorstate: %i\n", former_motorstate);
+        tee.printf("FAULT State Flushing.... %i\n", TapeState); // TapeState should never be over STATE_FAULT = 4
+        tee.printf("TapeSense: %i\n", digitalRead(TAPESENSE));
+        tee.printf("cb.count: %i\n", cb.count);
+        tee.printf("nrofbytes: %i\n", nrofbytes);
+        tee.printf("cbcountdeep: %i\n", cbcountdeep);
+        tee.printf("current_motorstate: %i\n", current_motorstate);
+        tee.printf("former_motorstate: %i\n", former_motorstate);
 
       }
       yield(); // avoid watchdog in this while loop.
     }
-    Serial.printf("\nRead %i bytes\n\n", nrofbytes);
-    Serial.printf("TapeMotor = %i\n", current_motorstate);
+    tee.printf("\nRead %i bytes\n\n", nrofbytes);
+    tee.printf("TapeMotor = %i\n", current_motorstate);
     // wait for buffer to empty
 
 
@@ -140,11 +140,11 @@ void TAP2CBMtape(File C64PRG, uint8_t TapeState, bool panicbutton) {
     while(cb.count && digitalRead(TAPEMOTOR) && !timeoutflag) {
       Serial.printf("cb_count: %i             \r", cb.count);
       if ((millis() - timeout) > 1000) {
-        Serial.printf("\nStuck in while loop..   Aborting\n\n");
+        tee.printf("\nStuck in while loop..   Aborting\n\n");
         timeoutflag = true;
       }
     }
-    Serial.printf("End TAP2CBMtape. cbcountdeep: %i\n", cbcountdeep);
+    tee.printf("End TAP2CBMtape. cbcountdeep: %i\n", cbcountdeep);
     
   } 
 

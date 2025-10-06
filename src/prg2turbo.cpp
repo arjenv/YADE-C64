@@ -20,8 +20,6 @@
 
 #include "main.h"
 
-#define	TURBO_SHORT	0x1A
-#define	TURBO_LONG	0x28
 #define TURBO_SHORT_AUTO 0xd
 #define TURBO_LONG_AUTO 0x14
 

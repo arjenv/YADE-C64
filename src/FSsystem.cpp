@@ -184,7 +184,7 @@ String calculate_memory(void) {
   FSInfo fs_info_webserver;
   LittleFS.info(fs_info_webserver);
   String cmem="{\"littlefs_total\":" + (String)fs_info_webserver.totalBytes + ", \"littlefs_used\":" + (String)fs_info_webserver.usedBytes + "}";
-  //Serial.println(cmem);
+  tee.println(cmem);
   return (cmem);
 }
 

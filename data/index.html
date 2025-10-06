@@ -18,7 +18,7 @@
 				<td><h2>C64 YADE</h2></td><td></td><td><a href= "/settings"><button class="cssbutton">Settings</button></a></td>
 			</tr>
 			<tr>
-				<td colspan="3"><p id="Notification" name="Notification" value="Notification">Note</p></td>
+				<td colspan="3"><p id="Notification" name="Notification" value="Notification" style.color='black'>Note</p></td>
 			</tr>
 			<tr>
 				<td colspan="3">
@@ -30,12 +30,19 @@
 						<input type="radio" id="NormalSpeed" name="Uploadformat" value="0">
   						<label for="NormalSpeed" id="labelNormalSpeed">Normal speed</label><br>
 						<input type="radio" id="TurboSpeed" name="Uploadformat" value="1">
-  						<label for="NormalSpeed" id="labelTurboSpeed">Turbo speed</label><br>
+  						<label for="Turbospeed" id="labelTurboSpeed">Turbo speed</label><br>
   						<input type="radio" id="AutoTurbo" name="Uploadformat" value="2">
   						<label for="AutoTurbo" id="labelAutoTurbo">Auto Fastload</label><br><br>
-  						<input type="submit" name="play" value="Save" disabled>
-  						<input type="submit" name="play" value="PLAY">
-  						<input type="submit" name="play" value="PANIC">
+  						<input button type="button" name="play" id="Save_icon" onclick="Submitform('Save')" title="Record&Play">
+  						<input button type="button" name="play" id="Play_icon" onclick="Submitform('PLAY')" title="Play">
+  						<input button type="button" name="play" id="Panic_icon" onclick="Submitform('PANIC')" title="Panic"><br><br>
+  					
+  						<p id="RecordOptions" name="RecordOptions">Save options:</p>
+						<input type="checkbox" id="RecordOverwrite" name="RecordOption" value="1">
+  						<label for="RecordOverwrite" id="labelRecordOverwrite" title="Overwrite file">Overwrite</label><br>
+  						<input type="checkbox" id="RecordClean" name="RecordOption" value="2">
+  						<label for="RecordClean" id="labelRecordClean" title="Clean up TAP">Clean up TAP</label><br>
+ 						
 					</form>
 				</td>
 			</tr>
@@ -45,6 +52,51 @@
 		</table>
 	</body>
 	<script>
+
+	function Submitform(action) {
+	
+		var urltocall = "/playbutton?C64filename=" + document.getElementById("C64filename").value + "&Uploadformat=";
+		var radiobtns = document.getElementsByName('Uploadformat');
+		var upl=10;
+		for(var i = 0; i < radiobtns.length; i++){
+   		if(radiobtns[i].checked){
+     			upl = radiobtns[i].value;
+	   	}
+		}
+		urltocall += upl;
+		urltocall += "&play=" + action;
+		let RecordOption = 0; 	// RecordOption = 0: No action
+										// RecordOption = 1: Overwrite File
+										// RecordOption = 2: Clean up TAP
+										// Recordoption = 3: Overwrite file AND cleanup TAP
+										
+		radiobtns = document.getElementsByName('RecordOption');
+		for (i=0; i<radiobtns.length; i++){
+			if(radiobtns[i].checked){
+				RecordOption+= parseInt(radiobtns[i].value);
+			}
+		}
+		urltocall += "&RecordOption=" + RecordOption;
+		console.log(urltocall);
+		document.getElementById("Notification").style.color ='black';
+			
+		xmlhttp=new XMLHttpRequest();
+		xmlhttp.open("GET", urltocall, true);
+		xmlhttp.send();
+		if (action=='Save') document.getElementById("Notification").innerHTML = "Record&Play";
+		if (action=='PLAY') document.getElementById("Notification").innerHTML = "Save";
+		if (action=='PANIC') document.getElementById("Notification").innerHTML = "Panic...";
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				let resp=xmlhttp.responseText;
+				document.getElementById("Notification").innerHTML = resp;
+				if (resp.startsWith("!")) {
+					document.getElementById("Notification").style.color ='#D60000';
+				}
+			}
+		};
+	}
+
 
 	const getdata = async() => {
   		try {

@@ -91,7 +91,7 @@ void prg2turbo_auto(File C64PRG, char *header) {
 
 	// Opening YADE_FL.prg for startaddress, endaddres etc
 
-	YADE_FL = LittleFS.open("/YADE_FL.prg", "r");
+	YADE_FL = LittleFS.open("/YADE_FL_set2B2.prg", "r");
     if (!YADE_FL) {
       tee.printf("Cannot open /YADE_FL.prg\n");
       // need some error code here to skip rest
@@ -196,13 +196,14 @@ void prg2turbo_auto(File C64PRG, char *header) {
 	header[3] = endaddressLowbyte; // endaddress low byte
 	header[4] = endaddressHighbyte; // endaddress High byte
 
+
 	// rest of the header not needed...
 
 	timeoutflag = 0;
 	timeout = millis();
 	timer1_running = false;
 	byte2turbo_auto(bitsequence, PILOTBYTE, TurboThreshold);
-	delay(1); // increase value if you want to see the message on the C64 "Press play on tape"
+	//delay(1000); // increase value if you want to see the message on the C64 "Press play on tape"
 
 	digitalWrite(TAPESENSE, 0); // press play
 	tee.printf("Pressed play again.....\n\n");

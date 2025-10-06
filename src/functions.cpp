@@ -218,7 +218,7 @@ bool fill_header(File C64PRG, char *Bname, char *header) {
 
   // space for extra character or a small program:
   if (Uploadformat == 2) { //autoturbo fast
-    YADE_header = LittleFS.open("/YADE_header.bin", "r");
+    YADE_header = LittleFS.open("/YADE_headerset2B2.bin", "r");
     if (!YADE_header) {
       tee.printf("Cannot open /YADE_header.bin\n");
       return(1); //error
@@ -267,3 +267,18 @@ void  Send_remaining_CB(void) { // Keep outputting CircularBuffer data until mot
 		if (PO) Serial.printf("Sending pulses from buffer until motor stops.... %i\n", cb.count);
 	}
 }
+
+
+
+char *strInsert(char *str1, const char *str2, uint8_t pos) {
+    size_t l1 = strlen(str1);
+    size_t l2 = strlen(str2);
+
+    if (pos > l1) pos = l1;
+
+    char *p  = str1 + pos;
+    memmove(p + l2, p, l1 - pos + 1);
+    memcpy (p, str2,  l2);
+    return str1;
+}
+

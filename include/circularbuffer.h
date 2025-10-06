@@ -2,7 +2,7 @@
 #define CIRCULARBUFFER_H
 
 
-#define BUFFER_SIZE 512 // when defined >255 adapt types head, tail, count etc
+#define BUFFER_SIZE 1024 // when defined >255 adapt types head, tail, count etc
 
 
 struct RingBuffer {

@@ -3,7 +3,6 @@ September 2025
 YADE
 
 Emulates a cassette player for C64.
-Based on NodeMCU ESP8266. Suffices for the job.
 Requires very little components.
 Login through a website interface on you phone/PC/Tablet.
 Simple upload C64 software via this IF.
@@ -14,7 +13,7 @@ a cassette player for the C64. And yes I do know there are other more elaborate
 versions.
 
 Loads .TAP and .PRG files in both normal mode as fastload mode.
-      --> In fastload you'd have to load a fastloader first.
+      --> In fastload you's have to load a fastloader first.
           Just like the real world :-)
 
 And there's an extra Auto_turbo mode. Autoturbo only works with .PRG files.
@@ -39,11 +38,8 @@ PC).
 
 Use at your own risk. If you did connect both and it works pls notify me.
 
-platformio.ini:
-      upload_port = 192.168.1.11
-      --> replace with YOUR IP address
 
-I am not a software guy, just enthousiastic..
+
 
 
 Schematic: The LED is 'luxury' so I could track the motor voltage during

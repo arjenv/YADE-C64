@@ -43,7 +43,7 @@ void push_ringbuffer_twice(volatile RingBuffer *cb, uint8_t item) { // push it t
     cb->head = (cb->head + 1) % BUFFER_SIZE;    
 }
 
-uint32_t pull_ringbuffer(volatile RingBuffer *cb) {
+uint8_t pull_ringbuffer(volatile RingBuffer *cb) {
 //    if (isEmpty(cb)) {
 //        printf("Buffer is empty! Cannot pull_ringbuffer.\n");
 //        return -1; // Indicate that the buffer is empty

@@ -20,7 +20,7 @@
 
 /* define macros */
 
-#define Version         "C64 YADE V1.0 17 September 2025"
+#define Version         "C64 YADE V1.1 2 October 2025"
 #define httpPort        80
 #define FLASHBUTTON     0 //GPIO0
 #define TAPESENSE       13      // D7
@@ -34,6 +34,14 @@
 #define STATE_FAULT     4
 
 #define PO              1 // Debug PO=printer output
+
+// CBM tape length values 
+#define CBMPULSE_SHORT  0x2F  	// 47
+#define CBMPULSE_MEDIUM 0x42	// 66
+#define CBMPULSE_LONG   0x56	// 86
+#define	TURBO_SHORT	    0x1A
+#define	TURBO_LONG	    0x28
+
 
 /* declare global variables */
 
@@ -64,7 +72,7 @@ bool        isFull(volatile struct RingBuffer *);
 bool        isEmpty(volatile struct RingBuffer *);
 void        push_ringbuffer(volatile struct RingBuffer *, uint8_t);
 void        push_ringbuffer_twice(volatile struct RingBuffer *, uint8_t);
-uint32_t    pull_ringbuffer(volatile struct RingBuffer *);
+uint8_t     pull_ringbuffer(volatile struct RingBuffer *);
 int         get_indexdata(char*, int);
 void        prg2tap(File C64PRG, char *header);
 void        prg2turbo(File C64PRG, char *header);
@@ -79,5 +87,9 @@ uint8_t     get_extension(char* C64basename, char* C64filename);
 bool        fill_header(File C64PRG, char* C64Basename, char* header);
 void        TAP2CBMtape(File C64PRG, uint8_t TapeState, bool panicbutton);
 void        Send_remaining_CB(void); // Keep outputting CircularBuffer data until motor halts
+char        *strInsert(char *str1, const char *str2, uint8_t pos);
+int         SaveTAP(bool cleanUpTAP, bool panicbutton, bool RECOverwrite);
+void        IRAM_ATTR timer1ISR(void);
+void        IRAM_ATTR ISRSave();
 
 #endif

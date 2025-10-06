@@ -85,10 +85,7 @@ repeat...
 
 
 #define FILETYPE 0x03 // non relocatable program, machine language
-// CBM tape length values 
-#define CBMPULSE_SHORT  0x2F
-#define CBMPULSE_MEDIUM 0x42
-#define CBMPULSE_LONG   0x56
+
 
 void byte2cbm(uint8_t * bitstring, uint8_t byte) {
 	// [ByteMarker][LSB|Bit1|Bit2|Bit3|Bit4|Bit5|Bit6|MSB|OddParity]
@@ -480,7 +477,7 @@ void prg2tap(File C64PRG, char *header) {
 
 		if (!timeoutflag) timeout=millis(); // reset timeout
 		i=0;
-		while (!timeoutflag && i<80-1) { // 80 pulses sync LET OP EVEN 79
+		while (!timeoutflag && i<80-1) { // 80 pulses sync (actually 79)
 			if ((millis()-timeout) > 1000) {
 	       		tee.printf("\nprg2tap Stuck in endsync2 sequence loop..   Aborting\n\n");
    				timeoutflag = true;

@@ -45,7 +45,8 @@
  *  17 september. 
  *    Clean up code 
  * 
- * 
+ *  2 october 2025
+ *    added Record Tap functionality
  *   
  * 
  * 
@@ -65,7 +66,6 @@
 File              C64PRG, YADE_FL;
 char              c64prgfilename[50];
 char              PRGbyte;
-uint32_t          nrofbytes;
 volatile          RingBuffer cb;
 const int         ledPin = 2;
 volatile uint32   Tperiod;
@@ -87,6 +87,10 @@ bool              flag_setvalues=false;
 uint8_t           error_nr=0;
 char 	            *ptr, C64basename[30], header[200];
 char              Notification[100];
+bool              savebutton = false;
+volatile unsigned long  Tnow, Tformer;
+bool              cleanupTAP, RecOverwrite;
+bool              CurrentTAP = 0;
 
 // variables for auto turbo
 uint16_t          CBMsyncLeader = 0x6A00;
@@ -108,7 +112,7 @@ void IRAM_ATTR timer1ISR() {
     ReadOutput = !ReadOutput;
   }
   if (!digitalRead(TAPEMOTOR)) {
-    Serial.printf("ISR Motor off... %i\n", timer1_read());
+    Serial.printf("\nISR Motor off... \n");
   }
   if (!cb.count) { // debug, should never happen
     Serial.printf("Interrupt... cbcount = 0\n");
@@ -119,7 +123,16 @@ void IRAM_ATTR timer1ISR() {
   interrupt_occured++; // debug should be rare...
 }
 
-
+void IRAM_ATTR ISRSave() {
+  Tnow = micros();
+  Tperiod = uint32_t(Tnow-Tformer)/8;
+  Tformer = Tnow;
+  //Serial.printf("Tperiod(hex) = %X\n", Tperiod);
+  //push_ringbuffer(&cb, Tperiod);
+  cb.count++;
+  cb.buffer[cb.head] = Tperiod;
+  cb.head = (cb.head + 1) % BUFFER_SIZE;
+}
 
 char static_ip[16] = "192.168.1.11";
 char static_gw[16] = "192.168.1.254";
@@ -203,26 +216,58 @@ void setup() {
     }
   });
   server.on("/playbutton", HTTP_GET, [](AsyncWebServerRequest * request) {
+    char  returnmessage[50];
+    int   RecOption;
+
     strcpy(C64filename, request->getParam("C64filename")->value().c_str());
+    Serial.printf("Server.on playbutton: C64filename= %s\n", C64filename);
+    RecOption = request->getParam("RecordOption")->value().toInt(); // 0=none, 1=overwrite, 2=cleanupTAP, 3=overwrite&CleanupTAP
+    cleanupTAP = false;
+    if (RecOption&0x02) cleanupTAP=true;
+    
+    RecOverwrite = RecOption&0x01;
+
     if(request->hasParam("Uploadformat")) {
       Uploadformat = request->getParam("Uploadformat")->value().toInt();
-      strcpy(Notification, "Converting .PRG to datasette format.");
     }
     else {
       Uploadformat = 10;
-      strcpy(Notification, "Converting .TAP to datasette format.");
     }
     if (!strcmp(request->getParam("play")->value().c_str(), "Save")) {
         playpressed = false;
         panicbutton = false;
+        savebutton = true;
+
+        // checking filename
+        if (strncmp(C64filename, "/prg/", 5) != 0) { // adding prefix if missing
+          strInsert(C64filename, "/prg/", 0);
+          Serial.printf("Added prefix: %s\n", C64filename);
+          }
+        if (strstr(C64filename, "Choose file") != NULL) {
+          strcpy(returnmessage, "!Please Enter a valid filename");
+          savebutton=false;
+        }
+        else if (!RecOverwrite && LittleFS.exists(C64filename)) {
+          strcpy(returnmessage, "!File exists. check 'overwrite' to override");
+          savebutton=false;
+        }
+        else {
+          strcpy(returnmessage, "Saving ");
+          strncat(returnmessage, C64filename, 40);
+        }
     }
     else if (!strcmp(request->getParam("play")->value().c_str(), "PLAY")) {
         playpressed = true;
         panicbutton = false;
+        savebutton = false;
+        strcpy(returnmessage, "Loading ");
+        strncat(returnmessage, C64filename, 40);
     }
     else if (!strcmp(request->getParam("play")->value().c_str(), "PANIC")) {
         playpressed = false;
         panicbutton = true;
+        savebutton = false;
+        strcpy(returnmessage, "PANIC... Trying to reset");
     }
 
 
@@ -231,7 +276,9 @@ void setup() {
     tee.printf("Uploadformat: %i\n", Uploadformat);
     tee.printf("playpressed: %i\n", playpressed);
     tee.printf("panicbutton: %i\n", panicbutton);
-    request->redirect("/");
+    tee.printf("savebutton: %i\n", savebutton);
+    //request->redirect("/");
+    request->send(200, "text/plain", returnmessage);
 
   });
   server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -245,6 +292,16 @@ void setup() {
 //    get_settings(variable_chars, sizeof(variable_chars)); // we need the sizeof, as in the function it will loose its value
     request->send(LittleFS, "/settings.json", "application/json");
   });
+  // Routes to load images
+  server.on("/images/icons8-record-button-48.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/images/icons8-record-button-48.png", "images/png");
+  });   
+  server.on("/images/icons8-play-button-48.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/images/icons8-play-button-48.png", "images/png");
+  });   
+  server.on("/images/icons8-power-off-button-48.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/images/icons8-power-off-button-48.png", "images/png");
+  });   
 
 // Send a GET request to <ESP_IP>/get?inputString=<inputMessage>
 // 27 August 2025
@@ -352,7 +409,6 @@ void loop () {
     if (!error_nr) {
       tee.printf("Filesize: %i\n", C64PRG.size());
 
-      nrofbytes = 0;
       timeout = millis();
       timeoutflag = false;
       current_motorstate = false;
@@ -369,7 +425,6 @@ void loop () {
         TapeState = STATE_HEADER;
         ReadOutput = 1;
         errorflag = 0;
-        //timer1_running = 0;
         first_interrupt = false;
       }
     }
@@ -380,7 +435,7 @@ void loop () {
         fill_header(C64PRG, C64basename, header);
       }
       else { // open YADE_FL.prg and fill header
-        	YADE_FL = LittleFS.open("/YADE_FL.prg", "r");
+        	YADE_FL = LittleFS.open("/YADE_FL_set2B2.prg", "r");
           if (!YADE_FL) {
             tee.printf("Cannot open /YADE_FL.prg\n");
             // need some error code here to skip rest
@@ -423,4 +478,11 @@ void loop () {
 
 
   }
+  if (savebutton) {
+    savebutton = false;
+    Tformer = micros();
+
+    SaveTAP(cleanupTAP, panicbutton, RecOverwrite);
+  }
+
 }
