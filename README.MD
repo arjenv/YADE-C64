@@ -1,11 +1,35 @@
+C64-YADE
+
+- Lean and mean Cassette player for the C64. Based on ESP8266 (NodeMCU).
+- Can handle TAP and PRG files in both normal speed as fastload mode.
+- 3rd mode: Autofastload. Loads PRG files without loading a turbo loader first.
+      Even faster than turbospeed.
+- Saves program to TAP format, both normal speed as turbo speed.
+- Upload and download files through a web-interface to/from FLASH
+- No need for SD card
+- Telnet (for status information)
+- WifiManager. For your first login connect to the NODEMCU AP and set your credentials. 
+
+
+
+
+October 2025:
+
+Added 'Save' functionality.
+Can now save a TAP file to the flash. User needs to make sure there is enough space.
+TAP files, especially in the normal speed mode are bulky.
+
+
+
+
 September 2025
 
 YADE
 
 Emulates a cassette player for C64.
 Requires very little components.
-Login through a website interface on you phone/PC/Tablet.
-Simple upload C64 software via this IF.
+Login through a website interface on your phone/PC/Tablet.
+Simply upload C64 software via this IF.
 No need for an SD card.
 
 I have a few NodeMCU's lying around and thought it would be a good base for
