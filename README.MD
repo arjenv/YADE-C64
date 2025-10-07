@@ -1,6 +1,6 @@
 C64-YADE
 
-- Lean and mean Cassette player for the C64. Based on ESP8266 (NodeMCU).
+- C2N Cassette player/recorder for the C64. Based on ESP8266 (NodeMCU).
 - Can handle TAP and PRG files in both normal speed as fastload mode.
 - 3rd mode: Autofastload. Loads PRG files without loading a turbo loader first.
       Even faster than turbospeed.
